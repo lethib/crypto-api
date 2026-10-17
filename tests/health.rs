@@ -2,6 +2,7 @@ use axum::{
     body::Body,
     http::{Request, Response, StatusCode},
 };
+use crypto_api::AppState;
 use http_body_util::BodyExt;
 use serde_json::json;
 use tower::ServiceExt;
@@ -20,7 +21,10 @@ impl ResponseBodyToJson for Response<Body> {
 #[tokio::test]
 async fn health_returns_ok() {
     let request = Request::get("/health").body(Body::empty()).unwrap();
-    let response = crypto_api::app().oneshot(request).await.unwrap();
+    let response = crypto_api::app(AppState::with_base64_encryptor())
+        .oneshot(request)
+        .await
+        .unwrap();
 
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(response.body_to_json().await, json!({ "status":"ok" }))
