@@ -3,6 +3,7 @@ use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
 };
 
+use crypto_api::AppState;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
 
@@ -33,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = tokio::net::TcpListener::bind(addr).await?;
     tracing::info!(addr = %listener.local_addr()?, "listening");
 
-    axum::serve(listener, crypto_api::app()).await?;
+    axum::serve(listener, crypto_api::app(AppState::with_base64_encryptor())).await?;
 
     Ok(())
 }

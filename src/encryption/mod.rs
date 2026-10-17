@@ -7,7 +7,8 @@ type Byte = u8;
 // used to detect encrypted data from non-encrypted data but still valid base64 strings
 const ENCRYPTION_PREFIX: &str = "enc:";
 
-pub trait Encryptor {
+// Send and Sync trait are required to safely send data across threads
+pub trait Encryptor: Send + Sync {
     fn encrypt(&self, data_to_encrypt: &[Byte]) -> String;
     fn decrypt(&self, data_to_decrypt: &str) -> Option<Vec<Byte>>;
 }
