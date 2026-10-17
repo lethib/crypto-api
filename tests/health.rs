@@ -13,7 +13,7 @@ trait ResponseBodyToJson {
 impl ResponseBodyToJson for Response<Body> {
     async fn body_to_json(self) -> serde_json::Value {
         let body = self.into_body().collect().await.unwrap().to_bytes();
-        return serde_json::from_slice(&body).unwrap();
+        serde_json::from_slice(&body).unwrap()
     }
 }
 
