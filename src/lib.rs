@@ -1,3 +1,4 @@
+pub mod encryption;
 mod handlers;
 
 use axum::{Router, routing::get};
