@@ -1,11 +1,11 @@
-use std::{
-    env::VarError,
-    net::{IpAddr, Ipv4Addr, SocketAddr},
-};
+use std::net::SocketAddr;
+mod config;
 
 use crypto_api::AppState;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
+
+use crate::config::Config;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -17,19 +17,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_env_filter(trace_filter)
         .init();
 
-    let host: IpAddr = match std::env::var("HOST") {
-        Ok(host_value) => host_value.parse()?,
-        Err(VarError::NotPresent) => Ipv4Addr::LOCALHOST.into(),
-        Err(error) => return Err(error.into()),
-    };
+    let config = Config::from_env()?;
 
-    let port: u16 = match std::env::var("PORT") {
-        Ok(port_value) => port_value.parse()?,
-        Err(VarError::NotPresent) => 3_000,
-        Err(error) => return Err(error.into()),
-    };
-
-    let addr = SocketAddr::new(host, port);
+    let addr = SocketAddr::new(config.host, config.port);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
     tracing::info!(addr = %listener.local_addr()?, "listening");

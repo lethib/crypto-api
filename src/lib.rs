@@ -1,5 +1,6 @@
 mod encryption;
 mod handlers;
+pub mod signing;
 
 use axum::{
     Router,
