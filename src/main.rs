@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 mod config;
 
-use crypto_api::AppState;
+use crypto_api::{AppState, encryption::Base64Encryptor, signing::hmac_sha256::HmacSha256Signer};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
 
@@ -24,7 +24,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = tokio::net::TcpListener::bind(addr).await?;
     tracing::info!(addr = %listener.local_addr()?, "listening");
 
-    axum::serve(listener, crypto_api::app(AppState::with_base64_encryptor())).await?;
+    let app_state = AppState::new(Base64Encryptor, HmacSha256Signer::new(config.hmac_secret));
+
+    axum::serve(listener, crypto_api::app(app_state)).await?;
 
     Ok(())
 }

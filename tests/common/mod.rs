@@ -7,12 +7,19 @@ use axum::{
     body::Body,
     http::{Request, Response, header},
 };
-use crypto_api::AppState;
+use crypto_api::{AppState, encryption::Base64Encryptor, signing::hmac_sha256::HmacSha256Signer};
 use http_body_util::BodyExt;
 use serde_json::Value;
 
+const TEST_HMAC_SECRET: &str = "test-hmac-secret-of-at-least-32-bytes";
+
 pub fn app() -> Router {
-    crypto_api::app(AppState::with_base64_encryptor())
+    let app_state = AppState::new(
+        Base64Encryptor,
+        HmacSha256Signer::new(TEST_HMAC_SECRET.to_owned()),
+    );
+
+    crypto_api::app(app_state)
 }
 
 pub fn post_json(uri: &str, body: &str) -> Request<Body> {
