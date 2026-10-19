@@ -11,7 +11,6 @@ const MIN_HMAC_SECRET_LENGTH: usize = 32;
 pub struct Config {
     pub host: IpAddr,
     pub port: u16,
-    #[allow(dead_code)]
     pub hmac_secret: String,
 }
 
