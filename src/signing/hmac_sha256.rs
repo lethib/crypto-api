@@ -13,7 +13,8 @@ impl HmacSha256Signer {
     }
 
     fn mac(&self, message: &[u8]) -> Hmac<Sha256> {
-        let mut hmac: Hmac<Sha256> = Hmac::new_from_slice(self.key.as_bytes()).unwrap();
+        let mut hmac: Hmac<Sha256> =
+            Hmac::new_from_slice(self.key.as_bytes()).expect("HMAC should accept any length keys");
 
         hmac.update(message);
         hmac
