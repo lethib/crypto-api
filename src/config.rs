@@ -28,9 +28,9 @@ impl Config {
             Err(error) => return Err(error.into()),
         };
 
-        let hmac_secret: String = match std::env::var("HMAC_SECRET") {
-            Ok(secret) => Self::verify_hmac_secret(secret)?,
-            Err(error) => return Err(error.into()),
+        let hmac_secret: String = {
+            let secret = std::env::var("HMAC_SECRET")?;
+            Self::verify_hmac_secret(secret)?
         };
 
         Ok(Self {
