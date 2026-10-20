@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 mod config;
 
 use crypto_api::{AppState, encryption::Base64Encryptor, signing::hmac_sha256::HmacSha256Signer};
+use tokio::signal::unix::{Signal, SignalKind, signal};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
 
@@ -26,7 +27,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app_state = AppState::new(Base64Encryptor, HmacSha256Signer::new(config.hmac_secret));
 
-    axum::serve(listener, crypto_api::app(app_state)).await?;
+    let sigterm = signal(SignalKind::terminate())?;
+
+    axum::serve(listener, crypto_api::app(app_state))
+        .with_graceful_shutdown(shutdown_signal(sigterm))
+        .await?;
+
+    tracing::info!("server stopped");
 
     Ok(())
+}
+
+/// Resolves on Ctrl+C (local dev) or SIGTERM (Docker, Kubernetes).
+async fn shutdown_signal(mut sigterm: Signal) {
+    tokio::select! {
+        Ok(()) = tokio::signal::ctrl_c() => tracing::info!("received Ctrl+C, shutting down"),
+        _ = sigterm.recv() => tracing::info!("received SIGTERM, shutting down"),
+    }
 }

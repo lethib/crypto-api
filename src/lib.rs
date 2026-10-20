@@ -7,6 +7,8 @@ use axum::{
     routing::{get, post},
 };
 use std::sync::Arc;
+use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
+use tracing::Level;
 
 use crate::{encryption::Encryptor, signing::Signer};
 
@@ -33,4 +35,9 @@ pub fn app(state: AppState) -> Router {
         .route("/sign", post(handlers::sign))
         .route("/verify", post(handlers::verify))
         .with_state(state)
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        )
 }
